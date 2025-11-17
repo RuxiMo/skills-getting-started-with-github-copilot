@@ -32,12 +32,33 @@ document.addEventListener("DOMContentLoaded", () => {
           </div>
         `;
 
-        // Populate participants list (bulleted)
+        // Populate participants list (bulleted) with avatar + name
         const participantsUl = activityCard.querySelector(".participants-list");
         if (details.participants && details.participants.length > 0) {
           details.participants.forEach((p) => {
             const li = document.createElement("li");
-            li.textContent = p;
+            li.className = "participant-item";
+
+            // avatar with initials
+            const avatar = document.createElement("span");
+            avatar.className = "participant-avatar";
+            const initials = p
+              .split(" ")
+              .map((s) => s[0])
+              .slice(0, 2)
+              .join("")
+              .toUpperCase();
+            avatar.textContent = initials;
+            avatar.setAttribute("aria-hidden", "true");
+
+            // name
+            const nameSpan = document.createElement("span");
+            nameSpan.className = "participant-name";
+            nameSpan.textContent = p;
+            nameSpan.title = p;
+
+            li.appendChild(avatar);
+            li.appendChild(nameSpan);
             participantsUl.appendChild(li);
           });
         } else {
