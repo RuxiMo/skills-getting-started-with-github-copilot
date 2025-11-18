@@ -76,7 +76,7 @@ section h3 {
 .participants-list {
   margin: 8px 0 0 0;
   padding: 0;
-  list-style: disc inside;
+  list-style: none; /* hide default bullets */
   display: block;
 }
 
@@ -90,8 +90,6 @@ section h3 {
   border: 1px solid #eee;
   border-radius: 8px;
   line-height: 1;
-  /* leave the native bullet but align content nicely */
-  list-style-position: inside;
 }
 
 /* circular avatar with initials */
@@ -117,6 +115,28 @@ section h3 {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* remove (delete) button next to participant */
+.participant-remove {
+  margin-left: auto;
+  background: transparent;
+  border: none;
+  color: #c62828;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+.participant-remove:hover {
+  background: rgba(198, 40, 40, 0.08);
+}
+
+.participant-remove:disabled {
+  opacity: 0.5;
+  cursor: default;
 }
 
 /* Muted placeholder when no participants */

@@ -25,7 +25,7 @@ document.addEventListener("DOMContentLoaded", () => {
           <h4>${name}</h4>
           <p>${details.description}</p>
           <p><strong>Schedule:</strong> ${details.schedule}</p>
-          <p><strong>Availability:</strong> ${spotsLeft} spots left</p>
+          <p class="availability"><strong>Availability:</strong> ${spotsLeft} spots left</p>
           <div class="participants" aria-live="polite">
             <strong>Participants:</strong>
             <ul class="participants-list"></ul>
@@ -57,8 +57,74 @@ document.addEventListener("DOMContentLoaded", () => {
             nameSpan.textContent = p;
             nameSpan.title = p;
 
+            // remove button (delete icon)
+            const removeBtn = document.createElement("button");
+            removeBtn.type = "button";
+            removeBtn.className = "participant-remove";
+            removeBtn.innerHTML = "&times;"; // simple × icon
+            removeBtn.setAttribute("aria-label", `Remove participant ${p} from ${name}`);
+
+            // click handler to unregister participant
+            removeBtn.addEventListener("click", async () => {
+              // optimistic UI: disable button while processing
+              removeBtn.disabled = true;
+
+              try {
+                // Attempt to call backend to unregister. Use DELETE on the same signup endpoint.
+                const res = await fetch(
+                  `/activities/${encodeURIComponent(name)}/signup?email=${encodeURIComponent(p)}`,
+                  { method: "DELETE" }
+                );
+
+                if (res.ok) {
+                  // remove this li from DOM
+                  const parentUl = li.parentElement;
+                  li.remove();
+
+                  // If no participants remain, show muted placeholder
+                  if (!parentUl.querySelector(".participant-item")) {
+                    const emptyLi = document.createElement("li");
+                    emptyLi.textContent = "No participants yet";
+                    emptyLi.className = "muted";
+                    parentUl.appendChild(emptyLi);
+                  }
+
+                  // update availability count shown in card
+                  const availEl = activityCard.querySelector(".availability");
+                  if (availEl) {
+                    // parse current number and increment
+                    const match = availEl.textContent.match(/(\d+) spots left/);
+                    if (match) {
+                      const current = parseInt(match[1], 10);
+                      const updated = current + 1;
+                      availEl.innerHTML = `<strong>Availability:</strong> ${updated} spots left`;
+                    }
+                  }
+
+                  // show brief success message
+                  messageDiv.textContent = `Removed ${p} from ${name}`;
+                  messageDiv.className = "success";
+                  messageDiv.classList.remove("hidden");
+                  setTimeout(() => messageDiv.classList.add("hidden"), 3000);
+                } else {
+                  const err = await res.json().catch(() => ({}));
+                  messageDiv.textContent = err.detail || `Failed to remove ${p}`;
+                  messageDiv.className = "error";
+                  messageDiv.classList.remove("hidden");
+                  removeBtn.disabled = false;
+                }
+              } catch (e) {
+                console.error("Error removing participant:", e);
+                messageDiv.textContent = `Failed to remove ${p}. Try again.`;
+                messageDiv.className = "error";
+                messageDiv.classList.remove("hidden");
+                removeBtn.disabled = false;
+              }
+            });
+
             li.appendChild(avatar);
             li.appendChild(nameSpan);
+            li.appendChild(removeBtn);
             participantsUl.appendChild(li);
           });
         } else {
